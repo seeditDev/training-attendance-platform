@@ -4,24 +4,37 @@ import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import Home from "./pages/Home";
+import { useEffect } from "react";
+import { useAuthStore } from "@/store/authStore";
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+import Trainings from "./pages/Trainings";
+import Students from "./pages/Students";
+import Attendance from "./pages/Attendance";
+import Analytics from "./pages/Analytics";
 
 function Router() {
-  // make sure to consider if you need authentication for certain routes
+  const { isAuthenticated, checkAuth } = useAuthStore();
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
   return (
     <Switch>
-      <Route path={"/"} component={Home} />
+      <Route path={"/ "} component={isAuthenticated ? Dashboard : Login} />
+      <Route path={"/"} component={isAuthenticated ? Dashboard : Login} />
+      <Route path={"/dashboard"} component={Dashboard} />
+      <Route path={"/trainings"} component={Trainings} />
+      <Route path={"/students"} component={Students} />
+      <Route path={"/attendance"} component={Attendance} />
+      <Route path={"/analytics"} component={Analytics} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
     </Switch>
   );
 }
-
-// NOTE: About Theme
-// - First choose a default theme according to your design style (dark or light bg), than change color palette in index.css
-//   to keep consistent foreground/background color across components
-// - If you want to make theme switchable, pass `switchable` ThemeProvider and use `useTheme` hook
 
 function App() {
   return (
