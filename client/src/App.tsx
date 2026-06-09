@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import Trainings from "./pages/Trainings";
 import Students from "./pages/Students";
 import Attendance from "./pages/Attendance";
+import AttendanceHistory from "./pages/AttendanceHistory";
 import Analytics from "./pages/Analytics";
 
 function Router() {
@@ -28,6 +29,7 @@ function Router() {
       <Route path={"/trainings"} component={Trainings} />
       <Route path={"/students"} component={Students} />
       <Route path={"/attendance"} component={Attendance} />
+      <Route path={"/attendance-history"} component={AttendanceHistory} />
       <Route path={"/analytics"} component={Analytics} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}

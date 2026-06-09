@@ -28,6 +28,7 @@ import {
 } from "recharts";
 import { Download, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
+import { exportAttendanceToExcel } from "@/lib/excelUtils";
 
 export default function Analytics() {
   const { isAuthenticated } = useAuthStore();
@@ -88,6 +89,35 @@ export default function Analytics() {
     } catch (error) {
       console.error("Error loading analytics:", error);
       toast.error("Failed to load analytics");
+    }
+  };
+
+  const handleExportReport = async () => {
+    if (!selectedTraining) {
+      toast.error("Please select a training first");
+      return;
+    }
+
+    try {
+      const training = trainings.find((t) => t.id === selectedTraining);
+      if (!training) return;
+
+      // Get all attendance records for this training
+      const allAttendance = await analyticsService.getAllAttendanceForTraining(
+        selectedTraining
+      );
+
+      const timestamp = new Date().toISOString().split("T")[0];
+      exportAttendanceToExcel(
+        training,
+        students,
+        allAttendance,
+        `attendance_report_${training.name}_${timestamp}.xlsx`
+      );
+      toast.success("Attendance report exported successfully");
+    } catch (error) {
+      console.error("Error exporting report:", error);
+      toast.error("Failed to export report");
     }
   };
 
@@ -159,6 +189,7 @@ export default function Analytics() {
             <p className="text-slate-600 mt-2">Attendance statistics and reports</p>
           </div>
           <Button
+            onClick={handleExportReport}
             variant="outline"
             className="border-slate-300 text-slate-700 hover:bg-slate-50"
           >

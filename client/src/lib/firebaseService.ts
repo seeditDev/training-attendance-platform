@@ -261,16 +261,48 @@ export const attendanceService = {
     const attendanceRef = collection(db, "attendance");
 
     attendanceRecords.forEach((record) => {
-      const docRef = doc(attendanceRef);
-      batch.set(docRef, {
-        ...record,
-        date: Timestamp.fromDate(record.date),
-        createdAt: Timestamp.now(),
-        updatedAt: Timestamp.now(),
-      });
+      const dateStr = record.date.toISOString().split("T")[0];
+      const docId = `${record.trainingId}-${record.studentId}-${dateStr}-${record.sessionId}`;
+      const docRef = doc(attendanceRef, docId);
+      batch.set(
+        docRef,
+        {
+          ...record,
+          date: Timestamp.fromDate(record.date),
+          createdAt: Timestamp.now(),
+          updatedAt: Timestamp.now(),
+        },
+        { merge: true }
+      );
     });
 
     await batch.commit();
+  },
+
+  async getHistoryByTraining(
+    trainingId: string,
+    limit: number = 100
+  ): Promise<{ date: Date; count: number }[]> {
+    const q = query(
+      collection(db, "attendance"),
+      where("trainingId", "==", trainingId),
+      orderBy("date", "desc")
+    );
+    const snapshot = await getDocs(q);
+
+    const dateMap = new Map<string, number>();
+    snapshot.docs.forEach((doc) => {
+      const dateStr = doc.data().date.toDate().toISOString().split("T")[0];
+      dateMap.set(dateStr, (dateMap.get(dateStr) || 0) + 1);
+    });
+
+    return Array.from(dateMap.entries())
+      .map(([dateStr, count]) => ({
+        date: new Date(dateStr),
+        count,
+      }))
+      .sort((a, b) => b.date.getTime() - a.date.getTime())
+      .slice(0, limit);
   },
 };
 
@@ -335,5 +367,9 @@ export const analyticsService = {
       averageAttendance:
         totalRecords > 0 ? (presentCount / totalRecords) * 100 : 0,
     };
+  },
+
+  async getAllAttendanceForTraining(trainingId: string): Promise<Attendance[]> {
+    return await attendanceService.getByTraining(trainingId);
   },
 };

@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Plus, Trash2, Edit2, Upload, Download } from "lucide-react";
 import { toast } from "sonner";
+import { exportStudentsToExcel, importStudentsFromExcel } from "@/lib/excelUtils";
 
 export default function Students() {
   const { isAuthenticated } = useAuthStore();
@@ -36,6 +37,7 @@ export default function Students() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [importing, setImporting] = useState(false);
 
   const [formData, setFormData] = useState({
     registrationNo: "",
@@ -137,6 +139,50 @@ export default function Students() {
     }
   };
 
+  const handleExport = () => {
+    try {
+      const timestamp = new Date().toISOString().split("T")[0];
+      exportStudentsToExcel(students, `students_${timestamp}.xlsx`);
+      toast.success("Students exported successfully");
+    } catch (error) {
+      console.error("Error exporting students:", error);
+      toast.error("Failed to export students");
+    }
+  };
+
+  const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setImporting(true);
+      const importedStudents = await importStudentsFromExcel(file);
+
+      let successCount = 0;
+      let errorCount = 0;
+
+      for (const studentData of importedStudents) {
+        try {
+          await studentService.create(studentData);
+          successCount++;
+        } catch (error) {
+          console.error("Error importing student:", error);
+          errorCount++;
+        }
+      }
+
+      toast.success(`Imported ${successCount} students${errorCount > 0 ? `, ${errorCount} failed` : ""}`);
+      loadStudents();
+    } catch (error) {
+      console.error("Error importing students:", error);
+      toast.error("Failed to import students");
+    } finally {
+      setImporting(false);
+      // Reset file input
+      event.target.value = "";
+    }
+  };
+
   const filteredStudents = students.filter(
     (student) =>
       student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -159,38 +205,53 @@ export default function Students() {
           </div>
           <div className="flex gap-3">
             <Button
+              onClick={handleExport}
               variant="outline"
               className="border-slate-300 text-slate-700 hover:bg-slate-50"
             >
               <Download className="w-4 h-4 mr-2" />
               Export
             </Button>
-            <Button
-              variant="outline"
-              className="border-slate-300 text-slate-700 hover:bg-slate-50"
-            >
-              <Upload className="w-4 h-4 mr-2" />
-              Import
-            </Button>
+            <label className="inline-block">
+              <input
+                type="file"
+                accept=".xlsx,.xls,.csv"
+                onChange={handleImport}
+                disabled={importing}
+                className="hidden"
+              />
+              <div
+                className="inline-flex items-center justify-center px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 cursor-pointer disabled:opacity-50"
+                onClick={(e) => {
+                  if (!importing) {
+                    (e.currentTarget.querySelector('input') as HTMLInputElement)?.click();
+                  }
+                }}
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                {importing ? "Importing..." : "Import"}
+              </div>
+            </label>
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
-                <Button
-                  onClick={() => {
-                    setEditingId(null);
-                    setFormData({
-                      registrationNo: "",
-                      rollNo: "",
-                      name: "",
-                      department: "",
-                      academicYear: "",
-                      batch: "",
-                    });
-                  }}
-                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Student
-                </Button>
+            <Button
+              onClick={() => {
+                setEditingId(null);
+                setFormData({
+                  registrationNo: "",
+                  rollNo: "",
+                  name: "",
+                  department: "",
+                  academicYear: "",
+                  batch: "",
+                });
+                setDialogOpen(true);
+              }}
+              className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Student
+            </Button>
               </DialogTrigger>
               <DialogContent className="max-w-2xl">
                 <DialogHeader>

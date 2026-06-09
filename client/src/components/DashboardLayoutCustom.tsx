@@ -40,6 +40,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       href: "/attendance",
     },
     {
+      label: "History",
+      icon: Calendar,
+      href: "/attendance-history",
+    },
+    {
       label: "Analytics",
       icon: BarChart3,
       href: "/analytics",
