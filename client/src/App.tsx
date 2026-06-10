@@ -23,15 +23,15 @@ function Router() {
 
   return (
     <Switch>
-      <Route path={"/ "} component={isAuthenticated ? Dashboard : Login} />
-      <Route path={"/ "} component={isAuthenticated ? Dashboard : Login} />
-      <Route path={"/dashboard"} component={Dashboard} />
-      <Route path={"/trainings"} component={Trainings} />
-      <Route path={"/students"} component={Students} />
-      <Route path={"/attendance"} component={Attendance} />
-      <Route path={"/attendance-history"} component={AttendanceHistory} />
-      <Route path={"/analytics"} component={AnalyticsDashboard} />
-      <Route path={"/404"} component={NotFound} />
+      {/* Root path - handles both "/" and "/?from_webdev=1" */}
+      <Route path="/" component={isAuthenticated ? Dashboard : Login} />
+      <Route path="/dashboard" component={Dashboard} />
+      <Route path="/trainings" component={Trainings} />
+      <Route path="/students" component={Students} />
+      <Route path="/attendance" component={Attendance} />
+      <Route path="/attendance-history" component={AttendanceHistory} />
+      <Route path="/analytics" component={AnalyticsDashboard} />
+      <Route path="/404" component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
     </Switch>
