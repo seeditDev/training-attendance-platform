@@ -12,7 +12,7 @@ import Trainings from "./pages/Trainings";
 import Students from "./pages/Students";
 import Attendance from "./pages/Attendance";
 import AttendanceHistory from "./pages/AttendanceHistory";
-import Analytics from "./pages/Analytics";
+import AnalyticsDashboard from "./pages/AnalyticsDashboard";
 
 function Router() {
   const { isAuthenticated, checkAuth } = useAuthStore();
@@ -24,13 +24,13 @@ function Router() {
   return (
     <Switch>
       <Route path={"/ "} component={isAuthenticated ? Dashboard : Login} />
-      <Route path={"/"} component={isAuthenticated ? Dashboard : Login} />
+      <Route path={"/ "} component={isAuthenticated ? Dashboard : Login} />
       <Route path={"/dashboard"} component={Dashboard} />
       <Route path={"/trainings"} component={Trainings} />
       <Route path={"/students"} component={Students} />
       <Route path={"/attendance"} component={Attendance} />
       <Route path={"/attendance-history"} component={AttendanceHistory} />
-      <Route path={"/analytics"} component={Analytics} />
+      <Route path={"/analytics"} component={AnalyticsDashboard} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
